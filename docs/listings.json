@@ -2,8 +2,8 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/jupyter-ipynb/hello.html",
       "/posts/post-with-code/index.html",
+      "/posts/jupyter-ipynb/hello.html",
       "/posts/welcome/index.html"
     ]
   }
