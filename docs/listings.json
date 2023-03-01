@@ -2,7 +2,9 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/gentle-t5-trans/gentle_t5_trans.html"
+      "/posts/gentle-t5-trans/gentle_t5_trans.html",
+      "/posts/gradientboost/gradient_boosting.html",
+      "/posts/em/em_algorithm.html"
     ]
   }
 ]
