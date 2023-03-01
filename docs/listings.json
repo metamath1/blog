@@ -2,9 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/post-with-code/index.html",
-      "/posts/jupyter-ipynb/hello.html",
-      "/posts/welcome/index.html"
+      "/posts/gentle-t5-trans/gentle_t5_trans.html"
     ]
   }
 ]

@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jo, Joonu">
+<meta name="dcterms.date" content="2023-02-27">
+
+<title>ML simple works - A Gentle Introduction to Creating an English-to-Korean translator with Transformers</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">ML simple works</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com"><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-page">
+      <h1 class="title">A Gentle Introduction to Creating an English-to-Korean translator with Transformers</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">ai</div>
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">transformers</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Jo, Joonu </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">February 27, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block column-page" id="quarto-document-content">
+
+
+
+
+<section id="친절한-영어-한국어-번역기-만들기-a-gentle-introduction-to-creating-an-english-to-korean-translator-with-transformers" class="level1">
+<h1>친절한 영어-한국어 번역기 만들기 A Gentle Introduction to Creating an English-to-Korean translator with Transformers</h1>
+<p>트랜스포머가 딥러닝 세상을 지배한 지금 과거 CNN, RNN을 모르고 딥러닝을 안다고 할 수 없듯이 이제는 트랜스포머를 이해하지 못하고 딥러닝을 공부한다고 말할 수 없는 시대가 되었다.</p>
+<p>트랜스포머가 초기 타겟한 작업이 번역이기 때문에 트랜스포머를 설명하는 글에서 단골로 등장하는 예제가 번역기 예제다. 주로 영어-독일어, 영어-스페인어 예제가 많다. 하지만 쉽게 접할 수 있는 알파벳권 언어 사이의 번역기 예제에 비해 영어-한국어 데이터를 사용해서 번역기를 학습시키는 예제는 이상하리만큼 찾아보기 힘들었다. 왜 그런지 이유는 잘 모르겠지만 어쨌든 거의 없다. 그래서 영어-한국어 문장쌍이 들어있는 원시데이터를 사용해 T5 모델로 영어-한국어 번역기를 데모 수준 정도로 학습하는 예제를 만들어 블로그에 포스팅하면 많은 사람들에게 도움이 되지 않을까 해서 이 글을 적게 되었다.</p>
+<p>이 글에서는 트랜스포머에 대한 기초적인 내용은 다루지 않고 오직 데이터를 어떻게 준비하고, 어떻게 데이터를 모델에 입력하여 학습을 시키고, 마지막으로 어떻게 영어로 부터 한국어 번역 문장을 출력시키는가 하는 것에만 초점을 맞추었다. 그리고 <strong>코드를 복잡하게 만드는 그 어떤 테크닉도 사용하지 않는다.</strong> 오로지 가장 간단하게 한국어 번역기를 구축하는데만 집중할 것이다. 사실 이 글의 대부분 내용은 허깅페이스 <a href="https://huggingface.co/course/chapter7/4?fw=pt">도움말</a>에 있는 것을 정리한것에 지나지 않는다. 하지만 입문자나 이제 막 트랜스포머를 이용해서 한국어 번역기를 만들고자 하는 사람들은 허깅페이스 도움말을 보고 이 내용을 모두 정리하기 쉽지 않은 것이 사실이어서 이글이 꽤 도움이 되리라 생각한다.</p>
+<p><a href="" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a></p>
+<hr>
+<section id="data-set" class="level2">
+<h2 class="anchored" data-anchor-id="data-set">Data Set</h2>
+<p>먼저 허깅페이스의 트랜스포머스 라이브러리를 임포트 한다. 본인 컴퓨터에 허깅페이스 트랜스포머스 라이브러리가 설치되어 있지 않다면 다음 명령어로 설치한다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install transformers</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>그 다음 해야할 일은 데이터 셋을 다운받는 것이다. 다음 명령을 실행해서 허깅페이스 <code>Datasets</code> 라이브러리를 설치한다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install datasets</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>모두 설치가 완료되었다면 데이터 셋을 다운받아야 한다. 먼저 허깅페이스 사이트에 접속해서 상단 메뉴에 Datasets를 클릭하고 아래 그림처럼 검색 조건을 다음처럼 맞추면</p>
+<ul>
+<li>좌측 작은 메뉴에서 Languages를 선택한다.</li>
+<li>Languages 하단에 보이는 여러 언어중에 Korean을 선택한다.</li>
+<li>다시 우측 검색 필터 창에 en을 적는다.</li>
+</ul>
+<p>데이터 셋 네 개가 보이는데 <code>bongsoo/news_talk_en_ko</code>를 사용하도록 하겠다.</p>
+<p><img src="dataset.png"></p>
+<p><code>bongsoo/news_talk_en_ko</code>를 클릭해서 나오는 화면에서 <code>Files and Versions</code>를 클릭하면 tsv 파일이 보이는데 이 파일에는 영어 문장과 한국어 문장이 한줄에 탭 문자로 구분되어 적혀있다. 로컬 디스크이 이 파일을 다운받고 파일을 읽어보면 다음처럼 확인된다.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>head <span class="op">-</span><span class="dv">5</span> news_talk_en_ko_train_130000.tsv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Skinner's reward is mostly eye-watering.    스키너가 말한 보상은 대부분 눈으로 볼 수 있는 현물이다.
+Even some problems can be predicted.    심지어 어떤 문제가 발생할 건지도 어느 정도 예측이 가능하다.
+Only God will exactly know why. 오직 하나님만이 그 이유를 제대로 알 수 있을 겁니다.
+Businesses should not overlook China's dispute. 중국의 논쟁을 보며 간과해선 안 될 게 기업들의 고충이다.
+Slow-beating songs often float over time.   박자가 느린 노래는 오랜 시간이 지나 뜨는 경우가 있다.</code></pre>
+</div>
+</div>
+<p>데이터 파일은 아주 단순한 형태인 것을 알 수 있다. 직접 tsv파일을 다운받아서 사용해도 되나 허깅페이스 허브로 부터 바로 다운받아 사용하는 편이 더 편하다. 다음 명령으로 다운받을 수 있다.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 데이터 셋을 다운받을 함수를 임포트 한다.</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 좀 전에 알아본 체크포인트를 사용해서 데이터를 받아온다.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>en_ko <span class="op">=</span> load_dataset(<span class="st">"bongsoo/news_talk_en_ko"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Using custom data configuration bongsoo--news_talk_en_ko-e7f00bc8f76f18d5
+Found cached dataset csv (/home/metamath/.cache/huggingface/datasets/bongsoo___csv/bongsoo--news_talk_en_ko-e7f00bc8f76f18d5/0.0.0/6b34fb8fcf56f7c8ba51dc895bfa2bfbe43546f190a60fcf74bb5e8afdcc2317)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"df63352363494b1b94a1134732d5659a","version_major":2,"version_minor":0}
+</script>
+</div>
+</div>
+<p>이제 데이터 객체를 확인해보면 <code>DatasetDict</code>라는 것을 알 수 있고 안에 <code>train</code> 키만 있는 것이 확인된다.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>en_ko</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ["Skinner's reward is mostly eye-watering.", '스키너가 말한 보상은 대부분 눈으로 볼 수 있는 현물이다.'],
+        num_rows: 1299999
+    })
+})</code></pre>
+</div>
+</div>
+<p><code>train</code>키에 <code>Dataset</code> 객체가 하나 있는데 <code>features</code>가 첫번째 데이터로 되어있고 행수는 1299999개인 것을 보아 데이터 파일에 컬럼명이 적혀있는 헤더라인이 없어서 첫줄을 헤더로 읽은것 같다. 첫줄을 데이터로 다시 집어 넣고 컬럼명은 <code>en</code>, <code>ko</code>로 설정하기 위해 데이터 셋을 <code>pandas</code>로 읽어드린다.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 허깅페이스 데이터셋을 판다스 포맷으로 세팅</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>en_ko.set_format(<span class="bu">type</span><span class="op">=</span><span class="st">"pandas"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 'train'키의 모든 행을 DataFrame df에 할당</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> en_ko[<span class="st">"train"</span>][:]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 잘 담겼는지 확인한다.</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Skinner's reward is mostly eye-watering.</th>
+      <th>스키너가 말한 보상은 대부분 눈으로 볼 수 있는 현물이다.</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Even some problems can be predicted.</td>
+      <td>심지어 어떤 문제가 발생할 건지도 어느 정도 예측이 가능하다.</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Only God will exactly know why.</td>
+      <td>오직 하나님만이 그 이유를 제대로 알 수 있을 겁니다.</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Businesses should not overlook China's dispute.</td>
+      <td>중국의 논쟁을 보며 간과해선 안 될 게 기업들의 고충이다.</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Slow-beating songs often float over time.</td>
+      <td>박자가 느린 노래는 오랜 시간이 지나 뜨는 경우가 있다.</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>I can't even consider uninsured treatments.</td>
+      <td>보험 처리가 안 되는 비급여 시술은 엄두도 못 낸다.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+<p>예상처럼 첫 줄이 헤더가 되었으니 이를 수정한 <code>DataFrame</code>을 만든다.</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>example_0 <span class="op">=</span> <span class="bu">list</span>(df.columns)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>example_0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>["Skinner's reward is mostly eye-watering.",
+ '스키너가 말한 보상은 대부분 눈으로 볼 수 있는 현물이다.']</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>example_0_df <span class="op">=</span> pd.DataFrame({col: [value] <span class="cf">for</span> col, value <span class="kw">in</span> <span class="bu">zip</span>((<span class="st">'en'</span>, <span class="st">'ko'</span>), example_0)})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df.columns <span class="op">=</span> (<span class="st">'en'</span>, <span class="st">'ko'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>en_ko_df <span class="op">=</span> pd.concat([example_0_df, df],).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>en_ko_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>en</th>
+      <th>ko</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Skinner's reward is mostly eye-watering.</td>
+      <td>스키너가 말한 보상은 대부분 눈으로 볼 수 있는 현물이다.</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Even some problems can be predicted.</td>
+      <td>심지어 어떤 문제가 발생할 건지도 어느 정도 예측이 가능하다.</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Only God will exactly know why.</td>
+      <td>오직 하나님만이 그 이유를 제대로 알 수 있을 겁니다.</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Businesses should not overlook China's dispute.</td>
+      <td>중국의 논쟁을 보며 간과해선 안 될 게 기업들의 고충이다.</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Slow-beating songs often float over time.</td>
+      <td>박자가 느린 노래는 오랜 시간이 지나 뜨는 경우가 있다.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+<p>이렇게 데이터 셋을 <code>DataFrame</code>으로 만들었다. 이제 이 <code>en_ko_df</code>로 부터 다시 허깅페이스 데이터 셋을 생성하자.</p>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> Dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> Dataset.from_pandas(en_ko_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>Dataset({
+    features: ['en', 'ko'],
+    num_rows: 1300000
+})</code></pre>
+</div>
+</div>
+<p>다시 데이터 셋을 확인해보면 <code>features</code>가 제대로 표시되고 샘플 수도 1300000개 인것을 확인할 수 있다.</p>
+<p>이렇게 만들어진 <code>DataFrame</code>으로 부터 데이터 셋이 잘 초기화되는 것을 확인했으니 <code>en_ko_df</code>를 세조각으로 쪼개서 tsv파일로 저장하자.</p>
+<div class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 각 데이터 셋의 샘플수를 정한다.</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>num_train <span class="op">=</span> <span class="dv">1200000</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>num_valid <span class="op">=</span> <span class="dv">90000</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>num_test <span class="op">=</span> <span class="dv">10000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>설정된 크기만큼 <code>DataFrame</code>을 자른다.</p>
+<div class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>en_ko_df_train <span class="op">=</span> en_ko_df.iloc[:num_train]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>en_ko_df_valid <span class="op">=</span> en_ko_df.iloc[num_train:num_train<span class="op">+</span>num_valid]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>en_ko_df_test <span class="op">=</span> en_ko_df.iloc[<span class="op">-</span>num_test:]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>다시 <code>tsv</code>파일로 저장한다.</p>
+<div class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>en_ko_df_train.to_csv(<span class="st">"train.tsv"</span>, sep<span class="op">=</span><span class="st">'</span><span class="ch">\t</span><span class="st">'</span>, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>en_ko_df_valid.to_csv(<span class="st">"valid.tsv"</span>, sep<span class="op">=</span><span class="st">'</span><span class="ch">\t</span><span class="st">'</span>, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>en_ko_df_test.to_csv(<span class="st">"test.tsv"</span>, sep<span class="op">=</span><span class="st">'</span><span class="ch">\t</span><span class="st">'</span>, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>이렇게 <code>tsv</code>파일 세개로 데이터를 정리했다. 이제 필요할때 이 파일을 읽어 허깅페이스 데이터셋을 만들 수 있다.</p>
+<p>아래처럼 스플릿을 정의한 사전을 <code>load_dataset</code>에 넘기면 된다. 이때 <code>delimiter</code>를 탭 문자로 지정해야 한다.</p>
+<div class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>data_files <span class="op">=</span> {<span class="st">"train"</span>: <span class="st">"train.tsv"</span>, <span class="st">"valid"</span>: <span class="st">"valid.tsv"</span>, <span class="st">"test"</span>: <span class="st">"test.tsv"</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span>  load_dataset(<span class="st">"csv"</span>, data_files<span class="op">=</span>data_files, delimiter<span class="op">=</span><span class="st">"</span><span class="ch">\t</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Using custom data configuration default-d166a7cf4252597d</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Downloading and preparing dataset csv/default to /home/metamath/.cache/huggingface/datasets/csv/default-d166a7cf4252597d/0.0.0/6b34fb8fcf56f7c8ba51dc895bfa2bfbe43546f190a60fcf74bb5e8afdcc2317...</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"7244b69bdd884b4299718f17d95ae43e","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"21a0ee2ba9bb4853bfdd8b87ff33c79a","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dataset csv downloaded and prepared to /home/metamath/.cache/huggingface/datasets/csv/default-d166a7cf4252597d/0.0.0/6b34fb8fcf56f7c8ba51dc895bfa2bfbe43546f190a60fcf74bb5e8afdcc2317. Subsequent calls will reuse this data.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"1ae68b12959f4bbc82c2385c018744a5","version_major":2,"version_minor":0}
+</script>
+</div>
+</div>
+<p>제대로 로딩되었는지 <code>dataset</code>을 확인해보자.</p>
+<div class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>dataset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="24">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['en', 'ko'],
+        num_rows: 1200000
+    })
+    valid: Dataset({
+        features: ['en', 'ko'],
+        num_rows: 90000
+    })
+    test: Dataset({
+        features: ['en', 'ko'],
+        num_rows: 10000
+    })
+})</code></pre>
+</div>
+</div>
+<p><code>DatasetDict</code>에 <code>train</code>, <code>valid</code>, <code>test</code> 키로 120만 문장, 9만 문장, 1만 문장이 저장된 것을 확인할 수 있다.</p>
+<p>이 데이터 셋에서 개별 샘플에 대한 접근은 <code>[split][feature][row num]</code> 형태로 가능하다.</p>
+<div class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># train 스플릿에서 영어 3개와 한국어 3개 샘플을 가져온다.</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dataset[<span class="st">'train'</span>][<span class="st">'en'</span>][:<span class="dv">3</span>], dataset[<span class="st">'train'</span>][<span class="st">'ko'</span>][:<span class="dv">3</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>["Skinner's reward is mostly eye-watering.", 'Even some problems can be predicted.', 'Only God will exactly know why.'] ['스키너가 말한 보상은 대부분 눈으로 볼 수 있는 현물이다.', '심지어 어떤 문제가 발생할 건지도 어느 정도 예측이 가능하다.', '오직 하나님만이 그 이유를 제대로 알 수 있을 겁니다.']</code></pre>
+</div>
+</div>
+<p>그런데 <code>feature</code>와 <code>row num</code>은 순서를 바꿔서 사용할 수 도 있다.</p>
+<div class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dataset[<span class="st">'train'</span>][:<span class="dv">3</span>][<span class="st">'en'</span>], dataset[<span class="st">'train'</span>][:<span class="dv">3</span>][<span class="st">'ko'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>["Skinner's reward is mostly eye-watering.", 'Even some problems can be predicted.', 'Only God will exactly know why.'] ['스키너가 말한 보상은 대부분 눈으로 볼 수 있는 현물이다.', '심지어 어떤 문제가 발생할 건지도 어느 정도 예측이 가능하다.', '오직 하나님만이 그 이유를 제대로 알 수 있을 겁니다.']</code></pre>
+</div>
+</div>
+<p>데이터를 어떻게 조회하는지는 데이터 구성 방식에 따라 조금씩 다르므로 데이터 셋을 보고 몇번 해보면 금방 접근법을 알 수 있다.</p>
+</section>
+<section id="hugging-face" class="level2">
+<h2 class="anchored" data-anchor-id="hugging-face">Hugging face</h2>
+<p>데이터 셋 준비를 마쳤으니 학습할 차례이다. 허깅페이스에서 제공하는 필요 클래스를 임포트 한다.</p>
+<p>먼저 선학습 모델을 사용하기 위한 클래스를 임포트 한다. <code>AutoTokenizer</code>는 선학습된 모델이 사용한 토크나이저를 읽기 위해 필요하며 <code>AutoModelForSeq2SeqLM</code>은 시퀀스 투 스퀀스 방식으로 작동하는 선학습된 모델을 불러 올 때 마지막에 분류기 헤드를 붙여서 모델을 로딩하기 위해 사용한다.</p>
+<div class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer, AutoModelForSeq2SeqLM</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2023-02-28 20:50:48.785319: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX_VNNI FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2023-02-28 20:50:48.886805: I tensorflow/core/util/util.cc:169] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2023-02-28 20:50:48.903288: E tensorflow/stream_executor/cuda/cuda_blas.cc:2981] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2023-02-28 20:50:49.229160: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/cuda-11.6/lib64:
+2023-02-28 20:50:49.229214: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /usr/local/cuda-11.6/lib64:
+2023-02-28 20:50:49.229217: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.</code></pre>
+</div>
+</div>
+<p>다음은 데이터 콜레이터를 임포트한다. 시쿼스 투 시퀀스 학습 과정은 인코더 입력 시퀀스, 디코더 입력 시퀀스, 디코더 출력 시퀀스를 필요로 하는데 미니배치로 부터 이를 적절히 정리해서 모델에 입력하는 작업이 필요하다. 예를 들면 미니 배치 내에 있는 인코더 입력 시퀀스의 길이를 맞춘다든지 디코더 입력시퀀스를 오른쪽으로 한칸 쉬프트시켜 디코더 출력 시퀀스를 만드는 작업등이 콜레이터에서 일어나는 작업인데 이런 작업을 <code>DataCollatorForSeq2Seq</code>가 자동으로 처리하게 된다.</p>
+<div class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> DataCollatorForSeq2Seq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>그리고 학습에 필요한 클래스를 임포트 한다. 학습에 필요한 설정을 <code>Seq2SeqTrainingArguments</code>에 정의하고 실제 학습은 <code>Seq2SeqTrainer</code>로 하게 된다. <code>Seq2SeqTrainer</code>는 <code>generate()</code>함수를 제공한다.</p>
+<div class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> Seq2SeqTrainingArguments, Seq2SeqTrainer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>허깅페이스 라이브러리로는 마지막으로 데이터 셋을 로딩하는 함수와 번역 결과를 측정할 함수를 로딩한다.</p>
+<div class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset, load_metric</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>그외 필요한 각종 라이브러리를 임포트 한다.</p>
+<div class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> multiprocessing</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>허깅페이스에서 파이토치 기반 구현을 사용하므로 gpu가 있다면 <code>device</code>를 세팅한다.</p>
+<div class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'cuda'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>device</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="32">
+<pre><code>'cuda'</code></pre>
+</div>
+</div>
+<p>미리 학습된 모델의 체크포인트를 세팅한다. 여기서 사용할 모델은 한국어와 영어에 미리 학습된 <a href="https://github.com/AIRC-KETI/ke-t5">KE-T5</a>모델을 사용한다. T5모델은 트랜스포머의 인코더, 디코더 구조를 모두 사용하는 모델로 번역기를 만들 때 사용할 수 있는 모델이다. 아래처럼 모델 체크 포인트와 T5 모델에 입력될 최대 토큰 길이를 설정한다.</p>
+<div class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>model_ckpt <span class="op">=</span> <span class="st">"KETI-AIR/ke-t5-base"</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>max_token_length <span class="op">=</span> <span class="dv">64</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="tokenizer" class="level2">
+<h2 class="anchored" data-anchor-id="tokenizer">Tokenizer</h2>
+<p>먼저 모델 체크 포인트를 사용하여 KE-T5 모델이 학습할때 함께 사용한 토크나이저를 불러온다. 허깅페이스 트랜스포머스 라이브러리를 사용할 때 가장 핵심이 되며 익숙해지기 쉽지 않은 부분이 이 토크나이저라고 개인적으로 생각한다.</p>
+<div class="cell" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> AutoTokenizer.from_pretrained(model_ckpt) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>토크나이저를 로딩할때 <code>sentencepiece</code>가 없다고 에러가 나면 아래 명령으로 토크나이저가 사용하는 라이브러리를 설치하고 다시 로딩한다.</p>
+<pre><code>!pip install sentencepiece</code></pre>
+<p>토크나이저를 불러왔으니 현재 사용하는 데이터셋에서 샘플을 가져와 토크나이징해보는 것이 좋을 것이다. 학습 세트에서 10번 샘플을 가지고 실험해보자. 먼저 10번 샘플을 뿌려보고</p>
+<div class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>dataset[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'en'</span>], dataset[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'ko'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="35">
+<pre><code>('Any academic achievement requires constant repetition.',
+ '어떤 학문이든지 일정의 성취를 이루기 위해서는 끊임없는 반복이 필요하다.')</code></pre>
+</div>
+</div>
+<p>토크나이저에 각 문장을 입력하고 토큰화된 상태로 돌려 받는다.</p>
+<div class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>tokenized_sample_en <span class="op">=</span> tokenizer(dataset[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'en'</span>], </span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>                                max_length<span class="op">=</span>max_token_length, </span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>                                padding<span class="op">=</span><span class="va">True</span>, truncation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>tokenized_sample_en</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="36">
+<pre><code>{'input_ids': [13941, 10114, 25542, 9361, 20526, 742, 32268, 12520, 3, 1], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>tokenized_sample_ko <span class="op">=</span> tokenizer(dataset[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'ko'</span>], </span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>                                max_length<span class="op">=</span>max_token_length, </span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>                                padding<span class="op">=</span><span class="va">True</span>, truncation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>tokenized_sample_ko</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="37">
+<pre><code>{'input_ids': [404, 12663, 15, 10775, 2334, 6, 15757, 21, 29819, 1736, 26778, 4342, 15, 1701, 3, 1], 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}</code></pre>
+</div>
+</div>
+<p>문장에 토큰으로 쪼개지고 각 토큰이 숫자로 변환된 것을 볼 수 있다. 이렇게 숫자화된 토큰을 <code>input_ids</code>로 반환하고 추가로 트랜스포머 인코더, 디코더에 쓰일 패딩 마스크도 함께 <code>attention_mask</code>로 돌려준다. 마스크가 모두 1인 이유는 샘플이 하나밖에 없어서 이다. 샘플 몇개를 더 실험해보면</p>
+<div class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>tokenizer(dataset[<span class="st">'train'</span>][:<span class="dv">3</span>][<span class="st">'en'</span>], </span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>          max_length<span class="op">=</span>max_token_length, </span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>          padding<span class="op">=</span><span class="va">True</span>, truncation<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="38">
+<pre><code>{'input_ids': [[388, 6809, 2952, 17, 8, 32204, 43, 8023, 6687, 28, 9495, 91, 3, 1], [4014, 322, 3170, 147, 67, 23274, 3, 1, 0, 0, 0, 0, 0, 0], [11783, 4412, 96, 6556, 709, 1632, 3, 1, 0, 0, 0, 0, 0, 0]], 'attention_mask': [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]]}</code></pre>
+</div>
+</div>
+<p>미니배치에 있는 샘플의 최대길이메 맞춰서 패딩되는 모습을 확인할 수 있다. 실제로 어떻게 토큰화 되었는지 확인해보자.</p>
+<div class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>    [</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>        tokenized_sample_en[<span class="st">'input_ids'</span>],</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>        tokenizer.convert_ids_to_tokens(tokenized_sample_en[<span class="st">'input_ids'</span>])</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>    ], index<span class="op">=</span>(<span class="st">'ids'</span>, <span class="st">'tokens'</span>)</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="39">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>ids</th>
+      <td>13941</td>
+      <td>10114</td>
+      <td>25542</td>
+      <td>9361</td>
+      <td>20526</td>
+      <td>742</td>
+      <td>32268</td>
+      <td>12520</td>
+      <td>3</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>tokens</th>
+      <td>▁Any</td>
+      <td>▁academic</td>
+      <td>▁achievement</td>
+      <td>▁requires</td>
+      <td>▁constant</td>
+      <td>▁re</td>
+      <td>pet</td>
+      <td>ition</td>
+      <td>.</td>
+      <td>&lt;/s&gt;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>    [</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>        tokenized_sample_ko[<span class="st">'input_ids'</span>],</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>        tokenizer.convert_ids_to_tokens(tokenized_sample_ko[<span class="st">'input_ids'</span>])</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>    ], index<span class="op">=</span>(<span class="st">'ids'</span>, <span class="st">'tokens'</span>)</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="40">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>10</th>
+      <th>11</th>
+      <th>12</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>ids</th>
+      <td>404</td>
+      <td>12663</td>
+      <td>15</td>
+      <td>10775</td>
+      <td>2334</td>
+      <td>6</td>
+      <td>15757</td>
+      <td>21</td>
+      <td>29819</td>
+      <td>1736</td>
+      <td>26778</td>
+      <td>4342</td>
+      <td>15</td>
+      <td>1701</td>
+      <td>3</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>tokens</th>
+      <td>▁어떤</td>
+      <td>▁학문</td>
+      <td>이</td>
+      <td>든지</td>
+      <td>▁일정</td>
+      <td>의</td>
+      <td>▁성취</td>
+      <td>를</td>
+      <td>▁이루기</td>
+      <td>▁위해서는</td>
+      <td>▁끊임없는</td>
+      <td>▁반복</td>
+      <td>이</td>
+      <td>▁필요하다</td>
+      <td>.</td>
+      <td>&lt;/s&gt;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+<p>KE-T5를 학습할때 학습된 규칙대로 토큰화가 진행된다. 영어에서 <code>repetition</code>은 <code>re</code>, <code>pet</code>, <code>ition</code>으로 쪼개진 것을 볼 수 있고, 한국어에서 <code>성취를</code>은 <code>성취</code>, <code>를</code>로 쪼개지고 <code>학문이든지</code>는 <code>학문</code>, <code>이</code>, <code>든지</code>로 쪼개진것을 볼 수 있다. 토큰 앞에 _표시는 이 토큰 앞에는 공백이 있어야 한다는 의미다. 그리고 마지막에 엔드 토큰인 <code>&lt;/s&gt;</code>가 항상 붙게 되는 것도 확인할 수 있다.</p>
+<p>이제 앞서 tsv파일로 부터 로딩한 <code>dataset</code>내의 문장을 모두 토크나이저를 사용해서 숫자로 바꾸는 작업을 해야 한다. 즉 문자로된 문장을 숫자로 바꿔 특성화 해야 한다. <code>dataset.map()</code>함수에 각 샘플을 토큰화 하는 함수를 만들어 전달하면 <code>map()</code>이 모든 샘플에 대해 전달받은 함수를 적용하게 되는데 함수는 이렇게 작성하면 된다.</p>
+<div class="cell" data-execution_count="41">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> convert_examples_to_features(examples):</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">###########################################################################</span></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># with 쓰는 옛날 방식</span></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># input_encodings = tokenizer(examples['en'], </span></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                             max_length=max_token_length, truncation=True)</span></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Setup the tokenizer for targets</span></span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># with tokenizer.as_target_tokenizer():</span></span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># target_encodings = tokenizer(text_target=examples['ko'], </span></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                             max_length=max_token_length, truncation=True)</span></span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#</span></span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">#</span></span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># return {</span></span>
+<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     "input_ids": input_encodings["input_ids"],</span></span>
+<span id="cb61-15"><a href="#cb61-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     "attention_mask": input_encodings["attention_mask"],</span></span>
+<span id="cb61-16"><a href="#cb61-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     "labels": target_encodings["input_ids"]</span></span>
+<span id="cb61-17"><a href="#cb61-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># }</span></span>
+<span id="cb61-18"><a href="#cb61-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-19"><a href="#cb61-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 그런데 이렇게 하면 인풋하고 한번에 처리 가능함.</span></span>
+<span id="cb61-20"><a href="#cb61-20" aria-hidden="true" tabindex="-1"></a>    model_inputs <span class="op">=</span> tokenizer(examples[<span class="st">'en'</span>],</span>
+<span id="cb61-21"><a href="#cb61-21" aria-hidden="true" tabindex="-1"></a>                             text_target<span class="op">=</span>examples[<span class="st">'ko'</span>], </span>
+<span id="cb61-22"><a href="#cb61-22" aria-hidden="true" tabindex="-1"></a>                             max_length<span class="op">=</span>max_token_length, truncation<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb61-23"><a href="#cb61-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb61-24"><a href="#cb61-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> model_inputs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>convert_examples_to_features()</code>가 하고 싶은 일은 <code>dataset</code>에 있는 “어떤 학문이든지 일정의 성취를 이루기 위해서는 끊임없는 반복이 필요하다.”라는 샘플 문장을 <code>[404,12663,15,10775,2334,6,15757,21,29819,1736,26778,4342,15,1701,3,1]</code>라는 정수로 바꾸는 것이다. <code>convert_examples_to_features()</code>가 <code>dataset</code>에 적용될 때 넘겨 받는 <code>examples</code>는 다음과 같이 넘어 온다.</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>examples<span class="op">=</span> {<span class="st">'en'</span>:[<span class="st">'sent1'</span>, <span class="st">'sent2'</span>, ... , <span class="st">'sent1000'</span>], <span class="co"># 이건 문장 1000개짜리 리스트</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>           <span class="st">'ko'</span>:[<span class="st">'sent1'</span>, <span class="st">'sent2'</span>, ... , <span class="st">'sent1000'</span>]}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>기본으로 미니 배치 사이즈는 1000으로 세팅되어 있다.(함수 기본인자는 <a href="https://huggingface.co/docs/datasets/v2.9.0/en/package_reference/main_classes#datasets.Dataset.map">여기</a>서 확인 가능)</p>
+<p>미니 배치로 넘어온 문장 샘플을 영어 문장과 한국어 문장을 각각 인풋과 타겟으로 토큰화하고 이로 부터 <code>input_ids</code>, <code>attention_mask</code>, <code>labels</code>로 묶어 리턴하는 방식이 예전에 쓰던 방식으로 함수 위쪽에 주석처리 되어 있다. 타겟 문장을 토큰화 할 때 타겟에서 필요로 하는 특수 토큰을 추가하는 경우 이를 처리하기위해 타겟 토큰 토큰화 때는 <code>with tokenizer.as_target_tokenizer():</code>라는 컨텍스트 매니저를 사용했는데 최근 업데이트에서는 그냥 <code>tokenizer</code>에 <code>text_target</code>인자에 타겟 문장을 넣어서 한번에 다 처리할 수 있다. 이렇게 <code>model_inputs</code>을 반환하면 <code>dataset</code>에 있던 각 레코드 마다 <code>en</code>, <code>ko</code> 특성에 추가로 <code>input_ids</code>, <code>attention_mask</code>, <code>labels</code> 특성이 더 추가 되게 된다. 사실 <code>en</code>, <code>ko</code> 특성은 더이상 필요없기 때문에 <code>convert_examples_to_features()</code>를 적요할 때 없애라는 인자를 세팅한다. 바로 <code>dataset</code>에 함수를 적용해보자.</p>
+<p>그냥 해도되나 좀 더 빠르게 하기 위해 <code>num_proc</code> 인자에 스레드 개수를 지정한다.</p>
+<div class="cell" data-execution_count="42">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>NUM_CPU <span class="op">=</span> multiprocessing.cpu_count() <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>NUM_CPU</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="42">
+<pre><code>10</code></pre>
+</div>
+</div>
+<p>그리고 <code>remove_columns</code> 인자에 기존 특성 이름인 <code>en</code>, <code>ko</code>를 전달해서 기존 특성은 제거하게 한다. 이 특성이 있으면 이후 콜레이터가 샘플들을 미니 배치로 묶을 때 패딩처리를 못하게 된다.</p>
+<div class="cell" data-execution_count="43">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>tokenized_datasets <span class="op">=</span> dataset.<span class="bu">map</span>(convert_examples_to_features, </span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>                                 batched<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="co"># 이걸 쓰지 않으면 원 데이터 'en', 'ko'가 남아서</span></span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="co"># 아래서 콜레이터가 패딩을 못해서 에러남</span></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>                                 remove_columns<span class="op">=</span>dataset[<span class="st">"train"</span>].column_names,</span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>                                 num_proc<span class="op">=</span>NUM_CPU) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                    </code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"fb93cea73c254058827f9367b4e4a302","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"9901bae6fa824a28b3e3b287bd935739","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"da36d179315242129454d5effe646f15","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"c30bdd66d3ac4a06aca8ad3a8da933f4","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"3b3f4d07c23c40f498bda1a917c20f9b","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"ffa8b1f812044fccb93023960131ad01","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"ce98dbbe826a466db2e06bcfd63f23dc","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"0a094352a83143a9bb55cbb12cd85dde","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"6e053275b3774bffb52d96d20ee73ec5","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"94231d222ef94d549d7431c877c72dbe","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                    </code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"5e8faba0376048a98d75e66470397737","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"efe53971dd53462b8d2625da0e59a9f3","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"eff3db25c111442183b3799b094e3ce1","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"2ee4fad1c7524b9c828d0ac84413dc41","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"f4088a36f5864970a41cb4fb5d4d380e","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"1a17d741979c4fd4a2517b8cf815abca","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"dd0c430e936e42ee9ab25454dc3fe756","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"5acb4a9b04484fd187f831395a19b581","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"276517f032f34c72808e3d8aac74febe","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"782b1b3e160f415d8b6cd2e7e362f71b","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                    </code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"02ae5cb685ac468b882a30bf14e5a369","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"ac7ecd50da364136b979965d1b1c7298","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"8a448ba99f3a4cdeb6da460d30c06e82","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"3c9652709d3f4afab2922f396b37eab8","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"5ed3eb7a74db4867b04a9d9c0a255b39","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"92d3d9c5c6c7438d89c7c20de84f5906","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"01fdd304ea65426da21efec48cb1d9f4","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"9b0698c067bd4d19b49106b85544655a","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"8ddc0b2bd8f34fe288ecb32e90766c41","version_major":2,"version_minor":0}
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"2270778600e7454db71083f11b567e8f","version_major":2,"version_minor":0}
+</script>
+</div>
+</div>
+<p><code>convert_examples_to_features()</code>이 <code>dataset</code>의 모든 샘플에 다 적용되고 나면 <code>tokenized_datasets</code>는 다음처럼 된다.</p>
+<div class="cell" data-execution_count="44">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>tokenized_datasets</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="44">
+<pre><code>DatasetDict({
+    train: Dataset({
+        features: ['input_ids', 'attention_mask', 'labels'],
+        num_rows: 1200000
+    })
+    valid: Dataset({
+        features: ['input_ids', 'attention_mask', 'labels'],
+        num_rows: 90000
+    })
+    test: Dataset({
+        features: ['input_ids', 'attention_mask', 'labels'],
+        num_rows: 10000
+    })
+})</code></pre>
+</div>
+</div>
+<p>기존에 있던 특성 <code>en</code>, <code>ko</code>는 사라졌고 <code>en</code>은 <code>input_ids</code>와 <code>attention_mask</code>로 <code>ko</code>는 <code>labels</code>로 바뀐것을 확인할 수 있다. 예를 들어 학습 세트에 10번 데이터를 보면 다음처럼 다 숫자라 바뀌게 된것이다.</p>
+<div class="cell" data-execution_count="45">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>tokenized_datasets[<span class="st">'train'</span>][<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="45">
+<pre><code>{'input_ids': [13941, 10114, 25542, 9361, 20526, 742, 32268, 12520, 3, 1],
+ 'attention_mask': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+ 'labels': [404,
+  12663,
+  15,
+  10775,
+  2334,
+  6,
+  15757,
+  21,
+  29819,
+  1736,
+  26778,
+  4342,
+  15,
+  1701,
+  3,
+  1]}</code></pre>
+</div>
+</div>
+<p>토크나이저를 써서 숫자로 부터 토큰화 해보면 다음과 같다.</p>
+<div class="cell" data-execution_count="46">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( <span class="st">'원 데이터    :'</span>, dataset[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'en'</span>] )</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( <span class="st">'처리 후 데이터:'</span>, tokenized_datasets[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'input_ids'</span>] )</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( <span class="st">'토큰화       :'</span>, tokenizer.convert_ids_to_tokens(tokenized_datasets[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'input_ids'</span>]) )</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( <span class="st">'원 데이터    :'</span>, dataset[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'ko'</span>] )</span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( <span class="st">'처리 후 데이터:'</span>, tokenizer.convert_ids_to_tokens(tokenized_datasets[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'labels'</span>]) )</span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( <span class="st">'토큰화       :'</span>, tokenized_datasets[<span class="st">'train'</span>][<span class="dv">10</span>][<span class="st">'labels'</span>] )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>원 데이터    : Any academic achievement requires constant repetition.
+처리 후 데이터: [13941, 10114, 25542, 9361, 20526, 742, 32268, 12520, 3, 1]
+토큰화       : ['▁Any', '▁academic', '▁achievement', '▁requires', '▁constant', '▁re', 'pet', 'ition', '.', '&lt;/s&gt;']
+
+
+원 데이터    : 어떤 학문이든지 일정의 성취를 이루기 위해서는 끊임없는 반복이 필요하다.
+처리 후 데이터: ['▁어떤', '▁학문', '이', '든지', '▁일정', '의', '▁성취', '를', '▁이루기', '▁위해서는', '▁끊임없는', '▁반복', '이', '▁필요하다', '.', '&lt;/s&gt;']
+토큰화       : [404, 12663, 15, 10775, 2334, 6, 15757, 21, 29819, 1736, 26778, 4342, 15, 1701, 3, 1]</code></pre>
+</div>
+</div>
+<p>데이터 특성화를 모두 마쳤으므로 이제 모델을 로딩하자. <code>AutoModelForSeq2SeqLM</code>를 사용해서 선학습 모델을 불러오면 선학습된 T5모델 마지막에 파인튜닝할 수 있는 분류 헤드를 붙인 모델을 반환한다.</p>
+</section>
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
+<div class="cell" data-execution_count="47">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> AutoModelForSeq2SeqLM.from_pretrained(model_ckpt).to(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>위처럼 모델을 로딩하고 모델 출력 시켜보면 T5 모델 레이어가 매우 길게 출력되는데 제일 마지막 부분에 다음과 같이 분류 헤드가 붙어 있는 것을 확인할 수 있다. 헤드를 보면 모델에서 출력하는 벡터는 768차원이고 이를 단어장 사이즈인 64128로 변환시키고 있는 것을 알 수 있다.</p>
+<pre><code>(lm_head): Linear(in_features=768, out_features=64128, bias=False)</code></pre>
+<p>이렇게 생성된 <code>model</code>은 인코더-디코더 구조를 가지는 트랜스포머이므로 이 모델을 포워딩 하려면 인코더 인풋과 디코더 인풋을 넣어줘야 한다. 모델을 만들고 가장 먼저해야되는 작업은 포워딩 테스트라고 개인적으로 생각한다. 임의의 입력을 넣고 출력이 의도대로 나오는지 확인하는 것이다. 이런 작업은 직접 만든 모델이 아닐 수록 중요한데 이렇게 해야지 모델이 제대로 작동하는지 또 어떤 구조로 되어 있는지 쉽게 이해할 수 있기 때문이다. 포워드 테스트를 하기위해 간단한 영어문장으로 예제를 준비한다.</p>
+<div class="cell" data-execution_count="48">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>encoder_inputs <span class="op">=</span> tokenizer(</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"Studies have been shown that owning a dog is good for you"</span>], </span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>    return_tensors<span class="op">=</span><span class="st">"pt"</span></span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>)[<span class="st">'input_ids'</span>].to(device)</span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>decoder_targets <span class="op">=</span> tokenizer(</span>
+<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"개를 키우는 것이 건강에 좋다는 연구 결과가 있습니다."</span>], </span>
+<span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a>    return_tensors<span class="op">=</span><span class="st">"pt"</span></span>
+<span id="cb77-9"><a href="#cb77-9" aria-hidden="true" tabindex="-1"></a>)[<span class="st">'input_ids'</span>].to(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>영어 문장은 인코더의 입력이 되고 한국어 문장은 디코더의 타겟이 된다. 아래처럼 모두 숫자로 변환되어 있다.</p>
+<div class="cell" data-execution_count="49">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( encoder_inputs )</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>( decoder_targets )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tensor([[24611,    84,   166,  8135,    38,   847,    91,    16,  8146,    43,
+           667,    40,   106,     1]], device='cuda:0')
+tensor([[15833, 12236,   179, 16120, 28117,  1007,  3883,   327,     3,     1]],
+       device='cuda:0')</code></pre>
+</div>
+</div>
+<p>이제 디코더 입력을 만들기위해 <code>model._shift_right</code>를 사용해 디코더 출력을 오른쪽으로 쉬프트 시킨다.</p>
+<div class="cell" data-execution_count="50">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>decoder_inputs <span class="op">=</span> model._shift_right(decoder_targets)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>shifted</code>와 <code>decoder_inputs</code>이 어떻게 다른지 비교해보면</p>
+<div class="cell" data-execution_count="51">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(</span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>    [</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>        tokenizer.convert_ids_to_tokens(decoder_targets[<span class="dv">0</span>]),</span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>        tokenizer.convert_ids_to_tokens(decoder_inputs[<span class="dv">0</span>])</span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>    index<span class="op">=</span>(<span class="st">'decoder target'</span>, <span class="st">'decoder input'</span>)</span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="51">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>decoder target</th>
+      <td>▁개를</td>
+      <td>▁키우는</td>
+      <td>▁것이</td>
+      <td>▁건강에</td>
+      <td>▁좋다는</td>
+      <td>▁연구</td>
+      <td>▁결과가</td>
+      <td>▁있습니다</td>
+      <td>.</td>
+      <td>&lt;/s&gt;</td>
+    </tr>
+    <tr>
+      <th>decoder input</th>
+      <td>&lt;pad&gt;</td>
+      <td>▁개를</td>
+      <td>▁키우는</td>
+      <td>▁것이</td>
+      <td>▁건강에</td>
+      <td>▁좋다는</td>
+      <td>▁연구</td>
+      <td>▁결과가</td>
+      <td>▁있습니다</td>
+      <td>.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+<p>위처럼 오른쪽으로 쉬프트된 디코더 입력은 <code>&lt;pad&gt;</code> 토큰이 추가되었다. 이렇게 출력으로 쓰이는 문장을 오른쪽으로 쉬프트시켜 티처포싱Teacher forcing을 진행하게 된다. 다음처럼 <code>model</code>에 인코더 입력, 디코더 입력, 디코더 타겟을 입력하고 포워드 시킨다.</p>
+<div class="cell" data-execution_count="53">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co"># forward pass</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> model(input_ids<span class="op">=</span>encoder_inputs, </span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>                decoder_input_ids<span class="op">=</span>decoder_inputs, </span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>                labels<span class="op">=</span>decoder_targets)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>model</code>의 <code>outputs</code>에는 다음과 같은 키가 있다.</p>
+<div class="cell" data-execution_count="54">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>outputs.keys()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="54">
+<pre><code>odict_keys(['loss', 'logits', 'past_key_values', 'encoder_last_hidden_state'])</code></pre>
+</div>
+</div>
+<p>손실함수 값을 다음처럼 확인할 수 있고 <code>grad_fn</code>이 있기 때문에 <code>output.loss</code>를 백워드 시킬 수 있다.</p>
+<div class="cell" data-execution_count="55">
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>outputs.loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="55">
+<pre><code>tensor(87.8185, device='cuda:0', grad_fn=&lt;NllLossBackward0&gt;)</code></pre>
+</div>
+</div>
+<p>인코더의 마지막 상태는 (1, 14, 768)이다. 각 숫자는 순서대로 샘플 수, 스탭 수, 모델 사이즈를 나타낸다. 즉 인코더로 들어가는 14개 토큰이 각각 768차원 벡터로 인코딩되었다.</p>
+<div class="cell" data-execution_count="56">
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>outputs[<span class="st">'encoder_last_hidden_state'</span>].shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="56">
+<pre><code>torch.Size([1, 14, 768])</code></pre>
+</div>
+</div>
+<p><code>logit</code>은 디코더 입력 토큰 10개에 대한 그 다음 토큰 예측 10개를 담고있다. 샘플 한개에 대해서 10개 토큰에 대해서 64128개 단어에 대한 확률값이 들어 있다.</p>
+<div class="cell" data-execution_count="57">
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>outputs[<span class="st">'logits'</span>].shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="57">
+<pre><code>torch.Size([1, 10, 64128])</code></pre>
+</div>
+</div>
+<p><code>logit</code>에 <code>argmax</code>를 씌워서 토큰화시켜보면 다음과 같다.</p>
+<div class="cell" data-execution_count="58">
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>tokenizer.convert_ids_to_tokens( torch.argmax(outputs[<span class="st">'logits'</span>][<span class="dv">0</span>], axis<span class="op">=</span><span class="dv">1</span>).cpu().numpy() )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="58">
+<pre><code>['큐브', '큐브', '▁비일비재', '▁비일비재', '▁베네', '▁비일비재', '▁베네', '▁베네', '큐브', '큐브']</code></pre>
+</div>
+</div>
+<p>마지막 헤더가 학습이 되지 않았기 때문에 적절한 아웃풋이 나오지 않지만 입력과 출력의 텐서 모양을 보면 포워드 패스가 제대로 작동한다는 것을 알 수 있다.</p>
+</section>
+<section id="collator" class="level2">
+<h2 class="anchored" data-anchor-id="collator">Collator</h2>
+</section>
+<section id="metric" class="level2">
+<h2 class="anchored" data-anchor-id="metric">Metric</h2>
+<p>BLEU 점수는 번역기가 생성한 문장이 레퍼런스(정답이라는 표현을 사용하지 않는 이유는 제대로 된 번역 문장이 오직 하나가 아니기 때문)문장과 얼마나 비슷한지 측정하는 점수라고 생각하면 된다. 단 같은 단어가 반복된다든지 레퍼런스 문장보다 너무 짧은 문장을 생성한다든지 하면 패널티를 부여 한다. 그렇기 때문에 길이가 최대한 비슷하고 다양한 단어를 사용하면서 생성된 문장의 단어가 레퍼런스 단어에 많이 보여야 높은 점수를 얻게 된다.</p>
+<p>BLEU를 계산하기 위해 다음 명령어로 허깅페이스 <a href="https://huggingface.co/docs/evaluate/index">evaluate</a> 라이브러리를 설치하고 <a href="https://huggingface.co/spaces/evaluate-metric/sacrebleu">sacrebleu</a>라이브러리도 함께 설치하자.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install evaluate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install sacrebleu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="59">
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> evaluate</span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>metric <span class="op">=</span> evaluate.load(<span class="st">"sacrebleu"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="60">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> [</span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"저는 깊이 있는 학습을 좋아해요."</span>,</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"딥러닝 틀이 잘 개발되기 때문에 요즘은 누군가의 도움 없이 기계번역 시스템을 구축할 수 있다."</span></span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>references <span class="op">=</span> [</span>
+<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"저는 딥러닝을 좋아해요."</span>, <span class="st">"나는 딥러닝을 사랑해요."</span>],</span>
+<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"요즘은 딥러닝 프레임워크가 잘 발달되어 있기 때문에 누구의 도움 없이도 기계 번역 시스템을 구축할 수 있습니다."</span>,</span>
+<span id="cb96-9"><a href="#cb96-9" aria-hidden="true" tabindex="-1"></a>     <span class="st">"최근에는 딥러닝 프레임워크가 잘 개발되어 있기 때문에 다른 사람의 도움 없이도 기계 번역 시스템을 개발할 수 있습니다."</span>]</span>
+<span id="cb96-10"><a href="#cb96-10" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb96-11"><a href="#cb96-11" aria-hidden="true" tabindex="-1"></a>metric.compute(predictions<span class="op">=</span>predictions, references<span class="op">=</span>references)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="60">
+<pre><code>{'score': 11.532935342795522,
+ 'counts': [12, 3, 1, 0],
+ 'totals': [21, 19, 17, 15],
+ 'precisions': [57.142857142857146,
+  15.789473684210526,
+  5.882352941176471,
+  3.3333333333333335],
+ 'bp': 1.0,
+ 'sys_len': 21,
+ 'ref_len': 21}</code></pre>
+</div>
+</div>
+</section>
+<section id="trainer" class="level2">
+<h2 class="anchored" data-anchor-id="trainer">Trainer</h2>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
