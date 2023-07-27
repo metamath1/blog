@@ -165,7 +165,7 @@
     "href": "posts/em/em_algorithm.html",
     "title": "A Step by Step Introduction to EM Algorithm",
     "section": "",
-    "text": "2020.07.09 조준우(metamath@gmail.com)"
+    "text": "# 글 전체에서 필요한 모듈을 임포트한다.\nimport numpy as np\nimport itertools\n\nimport matplotlib\nimport matplotlib.pyplot as plt\n\n# 구글 코랩에서 그래프에 LaTeX를 원활히 쓰기 위한 설정으로 코랩이 아니면 실행 안함\nmatplotlib.rc('text', usetex=True)\nmatplotlib.rcParams['text.latex.preamble'] = [r'\\usepackage{amsmath}']\n!apt install texlive-fonts-recommended texlive-fonts-extra cm-super dvipng &gt; /dev/null"
   },
   {
     "objectID": "posts/gentle-t5-trans/gentle_t5_trans.html#필요-패키지-설치",
