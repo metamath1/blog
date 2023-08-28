@@ -455,7 +455,7 @@ To: /content/sprites_1788_16x16.npy
 </section>
 <section id="모델-만들기" class="level2">
 <h2 class="anchored" data-anchor-id="모델-만들기">모델 만들기</h2>
-<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_training.png" style="width: 80%;" alt="ddpm algorithm1 Trainning"></p>
+<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_training.png" style="width: 60%;" alt="ddpm algorithm1 Trainning"></p>
 <p>정의한 모델을 학습시키기 위해선 알고리즘 1을 따라야 합니다. 케라스에서 제공하는 <code>fit()</code>의 잇점을 그대로 사용하면서 사용자 정의 학습 스탭을 적용시키기 위해 <code>tf.keras.Model</code>을 상속받고 학습 스탭만 재정의 하도록 합니다.</p>
 <p>아래 코드는 <a href="https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit?hl=ko">Model.fit의 동작 사용자 정의하기</a>에서 제공하는 뼈대코드를 약간 수정하여 재사용한 것입니다.</p>
 <div class="cell" data-execution_count="27">
@@ -686,7 +686,7 @@ Epoch 30/30
 </section>
 <section id="샘플링" class="level2">
 <h2 class="anchored" data-anchor-id="샘플링">샘플링</h2>
-<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_sampling.png" style="width: 80%;" alt="ddpm algorithm2 Sampling"></p>
+<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_sampling.png" style="width: 60%;" alt="ddpm algorithm2 Sampling"></p>
 <p>학습된 모델을 이용해서 샘플링 알고리즘을 따라 모든 시간 단계에 대한 샘플을 샘플링합니다.</p>
 <div class="cell" data-execution_count="36">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 샘플링 단계동안 생성된 이미지를 일정 간격마다 저장할 리스트를 준비</span></span>

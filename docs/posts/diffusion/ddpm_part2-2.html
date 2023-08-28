@@ -471,7 +471,7 @@ L_{\text{simple}}(\theta) := \mathbb{E}_{t, \mathbf{x}_0, \boldsymbol{\epsilon}}
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">0.0001</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>다음은 학습 루프를 구현할 차례입니다.</p>
-<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_training.png" style="width: 80%;" alt="ddpm algorithm1 Trainning"></p>
+<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_training.png" style="width: 60%;" alt="ddpm algorithm1 Trainning"></p>
 <p>위 그림에 나타난 학습 알고리즘을 직접 구현합니다. 학습 루프에서 <code>mae</code> 매트릭도 함께 계산해서 화면에 출력해 줍니다.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:896653,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1693105926562,&quot;user&quot;:{&quot;displayName&quot;:&quot;조준우&quot;,&quot;userId&quot;:&quot;07581913480846489655&quot;},&quot;user_tz&quot;:-540}" data-outputid="e15a9b9b-1f32-4c81-a340-c69dabf3da2c" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">30</span></span>
@@ -577,7 +577,7 @@ Epoch: 30: loss:0.1250, mae:0.2271</code></pre>
 </section>
 <section id="샘플링" class="level2">
 <h2 class="anchored" data-anchor-id="샘플링">샘플링</h2>
-<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_sampling.png" style="width: 80%;" alt="ddpm algorithm2 Sampling"></p>
+<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_sampling.png" style="width: 60%;" alt="ddpm algorithm2 Sampling"></p>
 <p>학습된 모델을 이용해서 샘플링 알고리즘을 따라 모든 시간 단계에 대한 샘플을 샘플링합니다.</p>
 <p>샘플링 과정에서 사용할 <span class="math inline">\(\beta_t\)</span>, <span class="math inline">\(\alpha_t\)</span>, <span class="math inline">\(\bar\alpha_t\)</span>를 클래스 외부 변수로 빼둡니다.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:4,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1693106044868,&quot;user&quot;:{&quot;displayName&quot;:&quot;조준우&quot;,&quot;userId&quot;:&quot;07581913480846489655&quot;},&quot;user_tz&quot;:-540}" data-execution_count="21">
