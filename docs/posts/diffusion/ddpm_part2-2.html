@@ -230,11 +230,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># jupyter notebook, quarto blog: notebook</span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>plotly.io.renderers.default <span class="op">=</span> <span class="st">"notebook"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="">이전 글</a>에서 DDPM에 대한 이론을 자세히 알아 봤습니다. 2-1편에 이어 2-2편에서는 파이토치를 사용해서 DDPM 모델을 직접 만들어봅니다. DDPM을 구현한 많은 참고 자료들이 인터넷에 많으나 이론에 나오는 수식을 1:1 방식으로 간결하게 코드로 매치 시키는 구현은 찾아보기 힘듭니다. DDPM 공식 구현 코드도 간결하고 읽기 좋게 작성된 코드는 아닙니다. 좋은 품질의 이미지를 생성하기 위해 복잡한 네트워크 구조를 사용하고 다양한 실험 옵션을 반영하기 때문인데 이런 코드는 학습용 코드로는 부적합 합니다.</p>
+<p><a href="https://metamath1.github.io/blog/posts/diffusion/ddpm_part1.html">이전 글</a>에서 DDPM에 대한 이론을 자세히 알아 봤습니다. 2-1편에 이어 2-2편에서는 파이토치를 사용해서 DDPM 모델을 직접 만들어봅니다. DDPM을 구현한 많은 참고 자료들이 인터넷에 많으나 이론에 나오는 수식을 1:1 방식으로 간결하게 코드로 매치 시키는 구현은 찾아보기 힘듭니다. DDPM 공식 구현 코드도 간결하고 읽기 좋게 작성된 코드는 아닙니다. 좋은 품질의 이미지를 생성하기 위해 복잡한 네트워크 구조를 사용하고 다양한 실험 옵션을 반영하기 때문인데 이런 코드는 학습용 코드로는 부적합 합니다.</p>
 <p>이런 이유로 본 글에서는 최소한 납득할 만한 결과를 보여 주면서도 가능한 간단한 구조로 된 모델을 정의해 사용할 것입니다. 이를 통해 쉽고 빠르게 이론과 실제 코드를 연결하여 이해할 수 있도록 구성했습니다. 더 정교한 이미지를 생성하기 위한 복잡한 네트워크의 적용을 독자 여러분의 몫으로 남겨두도록 하겠습니다.</p>
 <hr>
 <ul>
-<li><p>[주의] 이 글은 <a href="">친절한 디퓨전 모델 1편</a>의 후속 글로 1편을 읽지 않고 읽으면 정확히 이해가 안될 수 있습니다.</p></li>
+<li><p>[주의] 이 글은 <a href="https://metamath1.github.io/blog/posts/diffusion/ddpm_part1.html">친절한 디퓨전 모델 1편</a>의 후속 글로 1편을 읽지 않고 읽으면 정확히 이해가 안될 수 있습니다.</p></li>
 <li><p>이 글에서 사용하는 데이터 셋은 deeplearning.ai에서 제공하는 숏코스 <a href="https://www.deeplearning.ai/short-courses/">How Diffusion Models Work</a>에서 사용하는 16x16 크기를 가지는 이미지 스프라이트입니다.</p></li>
 <li><p>이 글은 다음 링크를 통해 구글 코랩에서 직접 실행하며 읽을 수 있습니다.</p></li>
 </ul>
@@ -373,7 +373,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="모델-만들기" class="level2">
 <h2 class="anchored" data-anchor-id="모델-만들기">모델 만들기</h2>
 <p>이제 모델을 정의 합니다. 가능하다면 (3,16,16) 크기의 이미지를 (768,) 크기의 벡터로 펼친 다음 완전 연결 네트워크로만 구성하고 싶었지만 실험 결과 이런 MLP 구조로는 의미있는 결과를 만들 수 없었습니다. 따라서 conv 레이어를 가지는 간단한 네트워크를 사용합니다. 원문에는 Unet 구조를 사용한다고 되어있지만 Unet도 복잡하기 때문에 Unet 특징이 약간 들어있는 아래 그림과 같은 네트워크를 사용하겠습니다.</p>
-<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/model_torch.png" alt="pytorch model" width="1000" style="border:2px solid black;"></p>
+<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/model_torch.png" alt="pytorch model" style="width: 100%;"></p>
 <p>네트워크 구조는 매우 간단하여 그림과 아래 코드를 함께 보면 금방 이해가 갈 것입니다. 네트워크의 특징을 다음으로 요약할 수 있습니다.</p>
 <ul>
 <li><p>이미지에 Conv레이어를 몇번 적용하여 만들어진 특징 맵과 시간 단계에 Dense 레이어를 몇번 적용한 임베딩 벡터를 중간쯤에서 더하여 두 입력을 모두 반영하는 특징 맵을 만듭니다.</p></li>
@@ -471,7 +471,7 @@ L_{\text{simple}}(\theta) := \mathbb{E}_{t, \mathbf{x}_0, \boldsymbol{\epsilon}}
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">0.0001</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>다음은 학습 루프를 구현할 차례입니다.</p>
-<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_training.png" alt="ddpm figure2 mod" width="700" style="border:2px solid black;"></p>
+<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_training.png" style="width: 80%;" alt="ddpm algorithm1 Trainning"></p>
 <p>위 그림에 나타난 학습 알고리즘을 직접 구현합니다. 학습 루프에서 <code>mae</code> 매트릭도 함께 계산해서 화면에 출력해 줍니다.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:896653,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1693105926562,&quot;user&quot;:{&quot;displayName&quot;:&quot;조준우&quot;,&quot;userId&quot;:&quot;07581913480846489655&quot;},&quot;user_tz&quot;:-540}" data-outputid="e15a9b9b-1f32-4c81-a340-c69dabf3da2c" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">30</span></span>
@@ -577,7 +577,7 @@ Epoch: 30: loss:0.1250, mae:0.2271</code></pre>
 </section>
 <section id="샘플링" class="level2">
 <h2 class="anchored" data-anchor-id="샘플링">샘플링</h2>
-<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_sampling.png" alt="ddpm figure2 mod" width="700" style="border:2px solid black;"></p>
+<p><img src="https://raw.githubusercontent.com/metamath1/imgs/main/diffusion/alg_sampling.png" style="width: 80%;" alt="ddpm algorithm2 Sampling"></p>
 <p>학습된 모델을 이용해서 샘플링 알고리즘을 따라 모든 시간 단계에 대한 샘플을 샘플링합니다.</p>
 <p>샘플링 과정에서 사용할 <span class="math inline">\(\beta_t\)</span>, <span class="math inline">\(\alpha_t\)</span>, <span class="math inline">\(\bar\alpha_t\)</span>를 클래스 외부 변수로 빼둡니다.</p>
 <div class="cell" data-executioninfo="{&quot;elapsed&quot;:4,&quot;status&quot;:&quot;ok&quot;,&quot;timestamp&quot;:1693106044868,&quot;user&quot;:{&quot;displayName&quot;:&quot;조준우&quot;,&quot;userId&quot;:&quot;07581913480846489655&quot;},&quot;user_tz&quot;:-540}" data-execution_count="21">
